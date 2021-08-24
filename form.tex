@@ -1,0 +1,214 @@
+\documentclass{form}
+\usepackage{hyperref}
+\usepackage[T1]{fontenc}
+
+\author{Diogo Rodrigues (\texttt{\href{mailto:up201806429@fe.up.pt}{up201806429@fe.up.pt}})}
+\title{SDIS@FEUP 2020/21 -- Form}
+\renewcommand\rightmark{
+    Licensed \href{https://creativecommons.org/licenses/by-nc-nd/4.0/}{CC BY-NC-ND 4.0 \vcenteredinclude{by-nc-nd-eu}}
+}
+
+\setlength{\columnsep}{0.5em}
+
+% Document
+\begin{document}
+\sisetup{range-phrase=-}
+\sisetup{range-units=single}
+
+\maketitle
+
+\begin{multicols*}{2}
+
+\textbf{Distributed system:} collection of distinct processes that are spacially separated and which communicate with one another by exchanging messages.
+\textbf{Message:} atomic bit string -- Format and meaning specified by communications protocol
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\begin{tabular}{@{} p{8em} | l | l | p{9em} @{}}
+    \textbf{Communication channels} & \textbf{UDP} & \textbf{TCP} & \\ \hline
+    Abstraction & Msg & Strm & Datagram/pipe \\
+    Connection-based & N & Y & setup/immediately \\
+    Reliability & N & Y & loss \& duplicates; detect(rec) \\
+    Order & N & Y & detect(rec) \\
+    Flow control & N & Y & prevent fast/slow \\
+    Num. recipients & $\geq 1$ & 1 & unicast (p2p), brdcast
+\end{tabular}
+
+\rule{\linewidth}{0.4pt}
+
+\textbf{Application-level multicast:} spanning tree on the overlay network -- node want to send to multicast group send message to the root -- it's then multicasted by unicast along the tree branches, from root towards leaves.
+
+\textbf{Epidemic algorithms:} use limited flooding, rather than spanning tree -- update info by passing it to some neighbor nodes -- these pass it on to their neighbors in a \textit{lazy} way -- eventually all nodes with copies of that piece of information will update it.
+
+\textbf{Anti-entropy:} each node periodically chooses a random node with which it exchanges msgs.
+
+\textbf{Rumor spreading:} node $n$ that has a new msg passes it on to the other nodes but if $n$ picks a node that has already received that message it may stop disseminating it.
+
+\textbf{Gossiping:} if $n$ sends msg to $m$ and $m$ already knows, $n$ loses motivation to spread it.
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\textbf{Remote Procedure Call (RPC):} typically implemented on top of the transport layer (TCP/IP); often RCP services offer more than one RP. Their identification of the procedure is performed by the dispatcher -- hierarchical name space (service, procedure).
+
+\textbf{RPC semantics:} \textit{exactly once} | \textit{at-least-once}: only if request is idempotent | \textit{at-most-once}: suits idempotent ($>1$ and $<1$ have no clear advantage, as service itself may have to take special measures)
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\begin{tabular}{@{}l | l | l | p{10em}@{}}
+    \textbf{Architecture} & \textbf{Paral.} & \textbf{I/O} & \textbf{Programming} \\ \hline
+    Iterative & N & Blk & easy \\
+    Multi-threaded & Y & Blk & race conditions, performance may suffer \\
+    Event-driven & Y & NBlk & state-machine
+\end{tabular}
+
+To take advantage of multiple processors/cores we need to use kernel-level threads (or processes).
+
+\textbf{Stateless} (no info between requests): operations must be idempotent if transport protocol doesn't ensure non-duplication; only if each msg has all the info for its processing independently of prev. comm.
+\textbf{Stateful} (server keeps info): only if each msg has enough info to relate it to prev. comm.
+
+\textbf{Lease:} solution to stateful servers and client crashes; a server leases a resource to a client for a finite time interval. Upon expiration the resource must be taken away, unless the client renews the lease.
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\textbf{Security:} servers must authenticate client and control access to resources; must ensure the CIA triad (Confidentiality, Integrity, Availability).
+
+\textbf{Authorization:} requires authentication and access control.
+\textbf{Risk analysis:} to identify assets we need to protect \& threats to these assets. The outcome of this analysis is the specification of a security policy (SP). To implement a SP, we use security mechanisms; to verify conformity, regular audits and system operation monitoring are required.
+
+\textbf{Cryptographic primitives:} 1. Encryption/decryption algs; 2. Cryptographic hash function; 3. Digital signature alg.
+
+\textbf{Fundamental principle:} algorithms should be public, security is provided by parametrizing algs with keys.
+
+\textbf{Cryptographic systems:} symmetrical (1 shared key); asymmetrical (1 private + 1 public key).
+
+\textbf{Hash functions} should have: compression (always return constant, finite \# of bits), ease of computation, non-reversible, weakly collision resistant (given $x$, it is infeasible to compute $x'$ such that $h(x)=h(x')$), strongly collision resistant (infeasible to find any values $x, x': h(x) = h(x')$).
+
+\textbf{Authentication:} by adding a key to the message/data, the hash function can be used to authenticate sender and check integrity; in this case, the hash value + hash function are known as message authentication code (MAC). The key must be shared by all communicating ends (a MAC is not the same as a digital signature).
+
+\textbf{Digital signature:} identifies its author, everyone can verify (i.e.: encrypted with private key, decrypted with public key)
+
+\begin{tabular}{@{}l | p{16em}@{}}
+    \textbf{Integrity} & Has no errors + not tampered with \\
+    \textbf{Authentication} & Originates from the sender \\
+    \textbf{Non-repudiation} & Sender cannot deny later on that it sent a msg \\
+    \textbf{Confidentiality} & No-one else can read it
+\end{tabular}
+
+\begin{tabular}{@{} l | l | l | l @{}}
+    \textbf{Security goal} & \textbf{Hash} & \textbf{MAC} & \textbf{Digital signature} \\ \hline
+    Kind of keys & None & Symm. & Asymm. \\
+    Integrity & Y & Y & Y \\
+    Authentication & N & Y & Y \\
+    Non-repudiation & N & N & Y \\
+\end{tabular}
+
+\rule{\linewidth}{0.4pt}
+
+\textbf{Secure communication channels} guarantee authentication of communicating parties, integrity, authenticity and confidentiality. Setup phase includes establishment of a \textbf{session key}.
+
+\textbf{Shared key authentication protocols:} parties at two ends share a secret key.
+
+\textbf{Public-key authentication:} principals know the public keys of one another, and each principal has its own private key; negotiate a session key; need authenticated encryption.
+
+\textbf{Deffie-Hellman Key-Agreement protocol:} A picks a secret large number $x$ and B picks $y$; session key is $g^{xy} \mod n$; $A \xrightarrow{(n, g, g^x \mod n)} B$, $B \xrightarrow{(g^y \mod n)} A$. Vulnerable to Man-in-the-Middle. Can be avoided by \textbf{published DH numbers} (A publishes $g^x \mod n$ and always reuses $x$ to compute the session key), or \textbf{authenticated DH} (msgs are authenticated to prevent tampering; requires either a secret key shared among A and B, or a public-keys and private for A and B).
+
+\textbf{Perfect forward secrecy:} attacker won't be able to decrypt a recorded session even if he breaks into A and B and steals their long-term secrets, as long as A and B delete their secret numbers $x$, $y$.
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\textbf{Fault-tolerance:} a system is fault-tolerant if it behaves correctly despite the failure of some components. Unless a distributed system is fault-tolerant, it will be less reliable than a non-distributed system.
+
+\textbf{Fundamental models:} Synchronism characterizes system according to temporal behavior of components (processes, local clocks, channels). Failure characterized according to types of failures that components may exhibit: Crash $\rightarrow$ Omission $\rightarrow$ Timing $\rightarrow$ Byzantine/arbitrary
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\textbf{Elections:} some algs rely on a process playing the role of leader
+
+\textbf{Garcia-Molina algorithms:} class of algorithms that ensure fault tolerance by two approaches: 1. mask failures; 2. reorganizing the system
+
+Virtually all distributed algs may be described by state machines. $S(i).s$ -- state of node $i$ (\texttt{DOWN}, \texttt{ELECTION}, \texttt{NORMAL}); $S(i).c$ -- coordinator according to $i$.
+
+Assertions: 1. any two nodes in \texttt{NORMAL} agree on the coordinator; 2. No failures during election cause all nodes to be \texttt{NORMAL} and agree on coordinator.
+
+\textbf{Safety property:} states that something (bad) will not happen.
+\textbf{Liveness property:} states that something (good) must happen.
+
+\textbf{Election vs Mutual Exclusion:} (1) In an election, fairness is not important. (2) Election protocol must handle leader failure (mutex assumes the critical section doesn't fail, and will block forever if mutex holder fails). (3) All nodes need to learn who the leader is.
+
+\textbf{Bully:} The smaller a node's id is, the stronger it is; node $n$ challenges all nodes, and those with greater id than $n$ respond to intimidate the candidate, and start an election. Leader/canditate failure $\rightarrow$ election; recovery of a node $\rightarrow$ election.
+
+\textbf{Invitation:} node $n$ wishing to become leader, so it invites others to join the group that it coordinates.
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\textbf{Domain Name System (DNS):} used on the internet to identify objects using names.
+
+\textbf{Zone:} sub-tree that stems from the partition of the DNS hierarchy; each zone has 1 server; some descendants of a zone do not need to belong to that zone.
+
+\textbf{Resource records:} (name, value, type, class, ttl) where info of each node is kept
+
+DNS zone's RR must have 1 primary server and at least 1 secondary server and they must keep all RRs of the nodes in that zone. To detect changes, each zone has a Start of Authority (SOA) RR with fields Serial (identifies "version" of zone) and Refresh (max time between update attempts).
+
+\textbf{How to detect update:} compare serial of SOA RR in secondary with SOA RR in primary.
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\textbf{Clock synchronization:} reduces communication (improves performance at the cost of occasionally rejecting a msg).
+
+\textbf{External clock sync:} external time reference $R$. Accuracy $\alpha$: $|C_i(t) - R_i(t)| < \alpha, \forall i$
+
+\textbf{Internal clock sync:} sync among local clocks in the system. Precision $\pi$: $|C_i(t) - C_j(t)| < \pi, \forall i, j$
+
+\textbf{Centralized algorithm:} assumes each process has a local clock: 1. Master/server clock (time reference); 2. Slave/client clock (synchronize with master).
+
+\textbf{Message delay estimation (Christian)} is based on round-trip delay; time at master on arrival to slave is in interval $[t+min, t+round-min]$; assuming delay is $round/2$, we bound the error to $round/2 - min$.
+
+\textbf{Precision Time Protocol (PTP):} slave clock rate is adjusted so that:
+
+$T_1^{k+1} - T_1^k = T_2^{k+1} - T_2^k$\\
+$T_2^{k+1} - T_1^{k+1} = T_2^k - T_1^k$
+
+\textbf{Network Time Protocol:} uses UDP; designed for the internet. Hierarchical, server at top (primary) are connected to UTC, secondary synchronize with the primary and so on. Each level in the hierarchy is a stratum, lowest stratum is primary servers.
+
+Synchronization modes: \textit{multicast} (periodic multicasts time to clients); \textit{request-reply} (similar to Christian); \textit{Symmetrical} (servers swap their times; used in lowest strata, ensures highest precision)
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\vfill\null
+\columnbreak
+
+\textbf{Lamport clock:} logical clock used to assign Lamport timestamps to events.
+
+To satisfy the clock condition ($e \rightarrow e' \implies L(e) < L(e')$), a Lamport clock must be updated before assigning its value to the event: 1. If receiving message $m$, $L_i = \max{L_i, TS(m)}$; 2. always increment $L_i$.
+
+\textbf{Total order multicast:} the guarantee that, given two messages $m$ and $m'$, all processes deliver $m$ and $m'$ in same order. To implement total order multicast, extended Lamport TS $(L(e), i)$ are used to timestamp msg and deliver in that order.
+
+\textbf{Vector clocks:} array of timestamps, one per processor; can be used to assert whether happens-before relation hold between any two events ($V < V' \iff \forall j, V[j] \leq V'[j] \wedge \exists i : V[i] < V'[i]$; $V(e) < V(e') \iff e \rightarrow e'$).
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\textbf{Atomic commitment:} ensure a set of operations executed in different processers are all executed or none of them is (ACID - atomicity, consistency, isolation, durability)
+
+\textbf{Two-phase commit} | Phase 1: coordinator sends \texttt{VOTE-REQUEST} to each participant; each participant votes \texttt{YES}/\texttt{NO}; Phase 2: coordinator decides -- if all \texttt{YES}, send \texttt{GLOBAL-COMMIT}; otherwise send \texttt{GLOBAL-ABORT}; participant replies with \texttt{ACK} and decides according to the coordinator message.
+
+Timeouts are used to detect failures; if process crashes while waiting for msg, takes corresponding timeout action (including termination protocol if failed in \texttt{READY} state); otherwise decides \texttt{ABORT}.
+
+2-phase protocol succeeds in the presence of non-byzantine failures and communication faults (including partitions), but might require participants to block while waiting for coordinator, in case the coordinator failed and is recovering.
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\textbf{Consensus:} each process starts with an input from a fixed value set $V$; each process chooses a value from $V$; the choice is irreversible; must satisfy assertions: agreement (1 value agreed by all processes), validity (if all processes have the same input value $v$, no value different from $v$ can be chosen); termination (in a failure-free execution, eventually all processes choose a value).
+
+\textbf{Synod algorithm:} proposers propose values, acceptors store best proposed values, learners learn the value at the end. \textbf{Paxos} chooses a leader to act as distinguised proposer and learners
+
+\vspace{-1em}\rule{\linewidth}{0.4pt}
+
+\textbf{Groups:} static [state-machine replication (SMR) with Paxos], dynamic [invitation alg.].
+
+\textbf{Dynamic group communication:} relies on group membership and group communication.
+
+\textbf{Order in multicast comm.:} objservation, unordered, FIFO, causal, total.
+
+\end{multicols*}
+
+\end{document}
