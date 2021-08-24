@@ -2,6 +2,8 @@
 
 [![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 
+[![form](https://github.com/dmfrodrigues/feup-sdis-form/actions/workflows/form.yml/badge.svg)](https://github.com/dmfrodrigues/feup-sdis-form/actions/workflows/form.yml)
+
 - **Institution:** [FEUP](https://sigarra.up.pt/feup/en/web_page.Inicial)
 - **Course:** [SDIS](https://sigarra.up.pt/feup/en/UCURR_GERAL.FICHA_UC_VIEW?pv_ocorrencia_id=459489) (Distributed Systems)
 - **Course grade:** 18/20
